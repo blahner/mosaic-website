@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <nav class="navbar">
-            <a href="/templates/index.html">Home</a>
-            <a href="/templates/upload.html" class="active">Upload</a>
-            <a href="/templates/download.html">Download</a>
-            <a href="/templates/faq.html">FAQ</a>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('upload') }}">Upload</a>
+            <a href="{{ url_for('download') }}">Download</a>
+            <a href="{{ url_for('faq') }}" class="active">FAQ</a>
         </nav>
 
         <main>

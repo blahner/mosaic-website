@@ -60,11 +60,11 @@ function setupEventListeners() {
     document.getElementById('copyButton').addEventListener('click', copyScript);
 }
 
-/*
+
 // Load data from Flask API
 async function loadData() {
     try {
-        const response = await fetch(`${API_BASE_URL}/s3/files`);
+        const response = await fetch(`api/s3/files`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -85,14 +85,15 @@ async function loadData() {
         `;
     }
 }
-*/
 
+/*
 // In a real implementation, this would fetch from S3
 function loadData() {
     allData = mockData;
     displayData(allData);
     updateStats();
 }
+    */
 
 function groupData(data) {
     const groups = new Map();
@@ -212,7 +213,7 @@ echo "Please select files to download"`;
 # Download script for selected files
 # Total files: ${fileList.length}
 
-BUCKET="your-s3-bucket-name"
+BUCKET=mosaic-fmri
 FILES=(
 ${fileList.map(file => `    "${file}"`).join('\n')}
 )

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from flask_cors import CORS
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
@@ -10,7 +10,9 @@ from datetime import datetime
 import tempfile
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__)
+app = Flask(__name__,
+            template_folder='templates',
+            static_folder='static')
 CORS(app)  # Enable CORS for frontend
 
 # Configuration
@@ -38,7 +40,7 @@ def extract_hdf5_metadata(file_path):
     try:
         with h5py.File(file_path, 'r') as f:
             # Try to get metadata from file attributes
-            for key in ['dataset_name', 'subject_name', 'pipeline', 'owner_name', 
+            for key in ['dataset_name', 'sub-ID', 'pipeline', 'owner_name', 
                        'owner_email', 'trial_format', 'github_url', 'publication_url']:
                 if key in f.attrs:
                     metadata[key] = f.attrs[key].decode('utf-8') if isinstance(f.attrs[key], bytes) else str(f.attrs[key])
@@ -59,18 +61,6 @@ def extract_hdf5_metadata(file_path):
         }
     
     return metadata
-
-def add_metadata_to_hdf5(file_path, metadata):
-    """Add metadata to HDF5 file as attributes"""
-    try:
-        with h5py.File(file_path, 'a') as f:
-            for key, value in metadata.items():
-                if value:  # Only add non-empty values
-                    f.attrs[key] = value
-        return True
-    except Exception as e:
-        print(f"Error adding metadata to HDF5 file: {e}")
-        return False
 
 def get_s3_object_metadata(key):
     """Get metadata from S3 object tags and attributes"""
@@ -103,13 +93,23 @@ def get_s3_object_metadata(key):
 
 @app.route('/')
 def index():
-    """Serve the main HTML file"""
-    return send_from_directory('.', 'index.html')
+    """Home page"""
+    return render_template('index.html')
 
-@app.route('/<path:filename>')
-def serve_static(filename):
-    """Serve static files (HTML, CSS, JS)"""
-    return send_from_directory('.', filename)
+@app.route('/upload')
+def upload():
+    """Upload page"""
+    return render_template('upload.html')
+
+@app.route('/download')
+def download():
+    """download page"""
+    return render_template('download.html')
+
+@app.route('/faq')
+def faq():
+    """faq page"""
+    return render_template('faq.html')
 
 @app.route('/api/s3/files', methods=['GET'])
 def list_s3_files():
@@ -202,10 +202,6 @@ def upload_to_s3():
         # Save file temporarily
         temp_path = os.path.join(UPLOAD_FOLDER, unique_filename)
         file.save(temp_path)
-        
-        # Add metadata to HDF5 file
-        if not add_metadata_to_hdf5(temp_path, metadata):
-            return jsonify({'error': 'Failed to add metadata to HDF5 file'}), 500
         
         # Upload to S3 with metadata
         s3_metadata = {k.replace('_', '-'): v for k, v in metadata.items() if v}
