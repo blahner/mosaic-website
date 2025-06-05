@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <a href="/templates/index.html">Home</a>
+            <a href="/templates/upload.html" class="active">Upload</a>
+            <a href="/templates/download.html">Download</a>
+            <a href="/templates/faq.html">FAQ</a>
+        </nav>
+
+        <main>
+            <h1>Frequently Asked Questions</h1>
+            
+            <div style="max-width: 800px;">
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">What file formats are supported?</h2>
+                    <p>Currently, we only support HDF5 files (.hdf5 or .h5 extensions). These files should contain the required metadata attributes for proper organization and discovery.</p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">How are files organized?</h2>
+                    <p>Files are grouped by dataset name, pipeline, trial format, publication URL, and GitHub repository URL. Files sharing these exact attributes will be grouped together on the download page.</p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">How do I download files?</h2>
+                    <p>On the download page, select the files you want by checking the boxes. A bash script will be automatically generated that you can copy and run on your local machine to download the selected files via AWS CLI.</p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">What do I need to run the download script?</h2>
+                    <p>You need to have the AWS CLI installed and configured with appropriate credentials to access the S3 bucket. The script uses standard AWS CLI commands to download files.</p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">What metadata is required?</h2>
+                    <p>Required metadata includes: unique file ID, dataset name, subject name, pipeline, owner name, owner email, and trial format. Optional metadata includes GitHub repository URL and publication URL.</p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">Can I search for specific datasets?</h2>
+                    <p>Yes, use the search box on the download page to filter datasets by dataset name, subject name, pipeline, owner name, or file ID.</p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">How do I upload files?</h2>
+                    <p>Use the upload page to select your HDF5 file and fill in the required metadata. The file will be uploaded to S3 with the metadata embedded or associated with it.</p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">Is there a file size limit?</h2>
+                    <p>File size limits depend on your S3 bucket configuration and AWS account limits. For very large files, consider using multipart upload or contact your administrator.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Data</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <a href="/templates/index.html">Home</a>
+            <a href="/templates/upload.html" class="active">Upload</a>
+            <a href="/templates/download.html">Download</a>
+            <a href="/templates/faq.html">FAQ</a>
+        </nav>
+
+        <main>
+            <h1>Download Data</h1>
+            
+            <div class="controls">
+                <input type="text" id="searchInput" placeholder="Search datasets...">
+                <span id="statsDisplay">0 datasets, 0 files</span>
+            </div>
+
+            <div id="datasetGroups"></div>
+
+            <div class="download-section">
+                <h2>Download Script</h2>
+                <div class="script-container">
+                    <pre id="downloadScript">#!/bin/bash
+# No files selected
+echo "Please select files to download"</pre>
+                    <button id="copyButton">Copy Script</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/download.js"></script>
+</body>
+</html>

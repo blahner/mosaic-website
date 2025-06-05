@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Data</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <a href="/templates/index.html">Home</a>
+            <a href="/templates/upload.html" class="active">Upload</a>
+            <a href="/templates/download.html">Download</a>
+            <a href="/templates/faq.html">FAQ</a>
+        </nav>
+
+        <main>
+            <h1>Upload Data</h1>
+            
+            <form id="uploadForm" style="max-width: 600px;">
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="file" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">HDF5 File:</label>
+                    <input type="file" id="file" accept=".hdf5,.h5" required 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="datasetName" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Dataset Name:</label>
+                    <input type="text" id="datasetName" required 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="subjectName" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Subject Name:</label>
+                    <input type="text" id="subjectName" required 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="pipeline" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Pipeline:</label>
+                    <input type="text" id="pipeline" required 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="ownerName" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Owner Name:</label>
+                    <input type="text" id="ownerName" required 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="ownerEmail" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Owner Email:</label>
+                    <input type="email" id="ownerEmail" required 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="trialFormat" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Trial Format:</label>
+                    <select id="trialFormat" required 
+                            style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                        <option value="">Select format...</option>
+                        <option value="continuous">Continuous</option>
+                        <option value="discrete">Discrete</option>
+                        <option value="mixed">Mixed</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="githubUrl" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">GitHub Repository URL:</label>
+                    <input type="url" id="githubUrl" 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="publicationUrl" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Publication URL:</label>
+                    <input type="url" id="publicationUrl" 
+                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                </div>
+
+                <button type="submit" 
+                        style="padding: 0.75rem 2rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
+                    Upload to S3
+                </button>
+            </form>
+
+            <div id="uploadStatus" style="margin-top: 2rem; padding: 1rem; border-radius: 4px; display: none;"></div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const statusDiv = document.getElementById('uploadStatus');
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            
+            // Show loading state
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#fff3cd';
+            statusDiv.style.color = '#856404';
+            statusDiv.textContent = 'Uploading file to S3...';
+            submitButton.disabled = true;
+            submitButton.textContent = 'Uploading...';
+            
+            try {
+                // Create FormData from form
+                const formData = new FormData();
+                formData.append('file', document.getElementById('file').files[0]);
+                formData.append('datasetName', document.getElementById('datasetName').value);
+                formData.append('subjectName', document.getElementById('subjectName').value);
+                formData.append('pipeline', document.getElementById('pipeline').value);
+                formData.append('ownerName', document.getElementById('ownerName').value);
+                formData.append('ownerEmail', document.getElementById('ownerEmail').value);
+                formData.append('trialFormat', document.getElementById('trialFormat').value);
+                formData.append('githubUrl', document.getElementById('githubUrl').value);
+                formData.append('publicationUrl', document.getElementById('publicationUrl').value);
+                
+                // Upload to Flask API
+                const response = await fetch(`${API_BASE_URL}/s3/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.style.background = '#d4edda';
+                    statusDiv.style.color = '#155724';
+                    statusDiv.textContent = `File uploaded successfully! Filename: ${result.filename}`;
+                    document.getElementById('uploadForm').reset();
+                } else {
+                    throw new Error(result.error || 'Upload failed');
+                }
+                
+            } catch (error) {
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.textContent = `Upload failed: ${error.message}`;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Upload to S3';
+            }
+        });
+    </script>
+</body>
+</html>
