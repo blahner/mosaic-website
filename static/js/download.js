@@ -210,19 +210,19 @@ echo "Please select files to download"`;
     
     const fileList = Array.from(selectedFiles);
     const script = `#!/bin/bash
-# Download script for selected files
+# Download script for selected files into your current directory
 # Total files: ${fileList.length}
 
-BUCKET=mosaic-fmri
+CLOUDFRONT_URL="https://d3ctas52djku5l.cloudfront.net"
 FILES=(
 ${fileList.map(file => `    "${file}"`).join('\n')}
 )
 
-echo "Downloading ${fileList.length} files from S3..."
+echo "Downloading ${fileList.length} files..."
 
 for file in "\${FILES[@]}"; do
     echo "Downloading \$file..."
-    aws s3 cp "s3://\$BUCKET/\$file" "./\$file"
+    curl -L -o "./\$file" "\$CLOUDFRONT_URL/\$file"
     if [ $? -eq 0 ]; then
         echo "✓ Successfully downloaded \$file"
     else

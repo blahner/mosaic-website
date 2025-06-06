@@ -20,18 +20,91 @@
             
             <div style="max-width: 800px;">
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">What file formats are supported?</h2>
-                    <p>Currently, we only support HDF5 files (.hdf5 or .h5 extensions). These files should contain the required metadata attributes for proper organization and discovery.</p>
+                    <h2 style="margin-bottom: 1rem;">What is MOSAIC?</h2>
+                    <p>MOSAIC (Meta-Organized Stimuli And Imaging data for Computational modeling) is a fMRI dataset aggregation framework. By 
+                        aggregating datasets, the computational neuroscience field can achieve greater scale and diversity of data that is otherwise not possible with a single dataset.
+                        MOSAIC is community-driven, meaning anyone can upload their MOSAIC-compatible fMRI datasets for the community to use.
+                    </p>
                 </div>
 
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">How are files organized?</h2>
-                    <p>Files are grouped by dataset name, pipeline, trial format, publication URL, and GitHub repository URL. Files sharing these exact attributes will be grouped together on the download page.</p>
+                    <h2 style="margin-bottom: 1rem;">What does it mean to be MOSAIC-compatible?</h2>
+                    <p>
+                        A group of datasets are MOSAIC-compatible if they are preprocessed with the same preprocessing pipeline (e.g., same version of fMRIPrep) and trial estimation procedure (e.g., single trial beta estimates).
+                        MOSAIC does not introduce a novel preprocessing pipeline or recommend any one in particular - the purpose is to simply preprocess all fMRI data into a common format (e.g., beta - stimulus pairs)
+                        while, to the best of our ability, controlling for scanner- dataset- and software-specific variability. In this way, MOSAIC can evolve with advancements in preprocessing techniques.
+                        In the download page of this portal, you will see datasets preprocessed with some combination of preprocessing pipeline and trial estimation procedure. All datasets that use the same preprocessing 
+                        pipeline and trial estimation procedure are MOSAIC-compatible with each other. But feel free to upload versions that use a different preprocessing pipeline if you think its better in some way - that version won't be MOSAIC-compatible with the previous dataset versions, but it will be MOSAIC-compatible
+                        with other datasets that follow your different preprocessing pipeline.
+                    </p>
+                    <p>
+                        This portal will notify you if your collection of datasets are obviously not MOSAIC-compatible (i.e., a mismatch between preprocessing pipelines), but researchers 
+                        should also use their discretion as compatibility is not always clear cut. For example, GLMs to estimate beta values sometimes depend on a few dataset-specific parameters. The MOSAIC's original set of 8 datasets uses GLMsingle which itself has three levels of processing (type A, type B, type C estimates).
+                        While type C gives the best results, some datasets are simply not compatible with type C due to a lack of stimulus repeats, so type B was used (plus other dataset-specific choices, like regressing out button presses). We still say the set of 8 datasets are MOSAIC-compatible because they
+                        share the same preprocessing pipeline (fMRIPrep version 23.2.0) and used the same software version of GLMsingle to then estimate the highest quality of beta estimates possible for the given dataset, even though the specific 'type' of GLMsingle estimate was not always the same.
+                    </p>
                 </div>
 
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">How do I download files?</h2>
-                    <p>On the download page, select the files you want by checking the boxes. A bash script will be automatically generated that you can copy and run on your local machine to download the selected files via AWS CLI.</p>
+                    <h2 style="margin-bottom: 1rem;">Can any fMRI dataset be uploaded?</h2>
+                    <p>
+                        Yes. The original MOSAIC paper (TODO link) scoped the initial 8 datasets to be passive vision event-related designs. This choice was made to obtain high quality
+                        beta - stimulus pairs. For example, longform movie datasets are not well-suited for GLMs to obtain well-defined beta - stimulus pairs. That being said, we hope MOSAIC
+                        can grow beyond the original scope. Feel free to preprocess, document, and upload any fMRI dataset.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">Who can upload a dataset to MOSAIC?</h2>
+                    <p>
+                        Anyone. You do not have to be an author of a dataset to upload a MOSAIC-compatible version of a dataset. Note that the uploaded dataset has to follow strict formatting rules and contain the required publicly visible metadata or else it will be rejected. Namely,
+                        all uploaded files must have:
+                        <ul>
+                            <li>Owner name: Name of the person (you) who preprocessed the dataset. Must be one individual taking responsibility.</li>
+                            <li>Owner email: Email of the "owner" to contact in case of questions.</li>
+                            <li>GitHub URL: URL to a public GitHub repository that contains code (and ideally quality checks) used to preprocess the uploaded data.</li>
+                            <li>Pipeline: Which preprocessing pipeline was used to preprocess the data (e.g., fMRIPrepv23.2.0).</li>
+                            <li>Trial format: The format of the trials (e.g., beta estimates, time series).</li>
+                            <li>Publication URL: URL to the original publication of the dataset for citation purposes.</li>
+                        </ul>
+
+                        Preprocessing and uploading a dataset to MOSAIC is not intended to be easy - it is intended to be transparent and standardized. fMRI dataset preprocessing is technical and time consuming. That being said, this procedure
+                        should not be impossible either. Follow the GitHub repositories of other successfully uploaded MOSAIC-compatible datasets as guides, and reach out to those owners 
+                        or us with questions.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">What actually gets uploaded?</h2>
+                    <p>
+                        A single file must be in .hdf5 format containing all preprocessed fMRI beta estimates and metadata for exactly one subject. Thus,
+                        if you are uploading a dataset containing n subjects, you will upload n .hdf5 files.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">Is data downloaded from this portal safe?</h2>
+                    <p>
+                        We run rigorous security checks on all uploaded data for malware and ensure to the best of our ability 
+                        that the files are safe for download. You can see the backend scripts here (TODO). This is open source - feel free to suggest improvements.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">Is MOSAIC the best way to preprocess fMRI data?</h2>
+                    <p>
+                        MOSAIC is a great way to preprocess your fMRI data, but might not be the best way. The purpose of MOSAIC is cross-dataset compatibility, not to optimize quality.
+                        Thus, you might be able to obtain higher quality data or take advantage of smaller voxel resolution using a custom preprocessing pipeline tailored towards a specific dataset.
+                        We hope that datasets get preprocessed in various ways to best support different research objectives, with MOSAIC preprocessing being one such preprocessing derivative.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">I collected a fMRI dataset, what is the best way to share it?</h2>
+                    <p>
+                        We highly recommend that you first and foremost make your raw data BIDS-compatible and upload it to OpenNeuro (or similar dataset sharing service). From there, you and other researchers
+                        can easily preprocess your dataset with different pipelines, including pipelines that make it MOSAIC-compatible with other datasets.
+                    </p>
                 </div>
 
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
@@ -40,23 +113,8 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">What metadata is required?</h2>
-                    <p>Required metadata includes: unique file ID, dataset name, subject name, pipeline, owner name, owner email, and trial format. Optional metadata includes GitHub repository URL and publication URL.</p>
-                </div>
-
-                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">Can I search for specific datasets?</h2>
-                    <p>Yes, use the search box on the download page to filter datasets by dataset name, subject name, pipeline, owner name, or file ID.</p>
-                </div>
-
-                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">How do I upload files?</h2>
-                    <p>Use the upload page to select your HDF5 file and fill in the required metadata. The file will be uploaded to S3 with the metadata embedded or associated with it.</p>
-                </div>
-
-                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
                     <h2 style="margin-bottom: 1rem;">Is there a file size limit?</h2>
-                    <p>File size limits depend on your S3 bucket configuration and AWS account limits. For very large files, consider using multipart upload or contact your administrator.</p>
+                    <p>Yes, the single file size limit is 20gb. This limit mainly exists to prevent unintended large uploads. If you are trying to upload a dataset that exceeds this limit, contact us and we can raise the limit. </p>
                 </div>
             </div>
         </main>
