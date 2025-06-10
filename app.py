@@ -6,6 +6,7 @@ import h5py
 import io
 import os
 import json
+import humanize
 from datetime import datetime
 import tempfile
 from werkzeug.utils import secure_filename
@@ -40,8 +41,8 @@ def extract_hdf5_metadata(file_path):
     try:
         with h5py.File(file_path, 'r') as f:
             # Try to get metadata from file attributes
-            for key in ['dataset_name', 'sub-ID', 'pipeline', 'owner_name', 
-                       'owner_email', 'trial_format', 'github_url', 'publication_url']:
+            for key in ['dataset_name', 'subjectID', 'preprocessing_pipeline', 'owner_name', 
+                       'owner_email', 'beta_pipeline', 'github_url', 'publication_url']:
                 if key in f.attrs:
                     metadata[key] = f.attrs[key].decode('utf-8') if isinstance(f.attrs[key], bytes) else str(f.attrs[key])
                 else:
@@ -51,11 +52,11 @@ def extract_hdf5_metadata(file_path):
         # Return empty metadata if file can't be read
         metadata = {
             'dataset_name': '',
-            'subject_name': '',
-            'pipeline': '',
+            'subjectID': '',
+            'preprocessing_pipeline': '',
             'owner_name': '',
             'owner_email': '',
-            'trial_format': '',
+            'beta_pipeline': '',
             'github_url': '',
             'publication_url': ''
         }
@@ -68,20 +69,12 @@ def get_s3_object_metadata(key):
         # Get object metadata
         response = s3_client.head_object(Bucket=S3_BUCKET, Key=key)
         
-        # Try to get custom metadata from object metadata
+        # Get custom metadata from object metadata
         metadata = response.get('Metadata', {})
         
-        # If no metadata in object, try to download and read HDF5 metadata
-        if not metadata or not any(metadata.values()):
-            # Download file temporarily to read metadata
-            with tempfile.NamedTemporaryFile(suffix='.hdf5') as tmp_file:
-                s3_client.download_fileobj(S3_BUCKET, key, tmp_file)
-                tmp_file.flush()
-                metadata = extract_hdf5_metadata(tmp_file.name)
-        
         # Ensure all required fields exist
-        required_fields = ['dataset_name', 'subject_name', 'pipeline', 'owner_name', 
-                          'owner_email', 'trial_format', 'github_url', 'publication_url']
+        required_fields = ['dataset_name', 'subjectID', 'preprocessing_pipeline', 'owner_name', 
+                          'owner_email', 'beta_pipeline', 'github_url', 'publication_url']
         for field in required_fields:
             if field not in metadata:
                 metadata[field] = ""
@@ -138,15 +131,15 @@ def list_s3_files():
             file_data = {
                 'fileId': key,
                 'datasetName': metadata.get('dataset_name', ''),
-                'subjectName': metadata.get('subject_name', ''),
-                'pipeline': metadata.get('pipeline', ''),
+                'subjectName': metadata.get('subjectID', ''),
+                'preprocessingPipeline': metadata.get('preprocessing_pipeline', ''),
                 'ownerName': metadata.get('owner_name', ''),
                 'ownerEmail': metadata.get('owner_email', ''),
-                'trialFormat': metadata.get('trial_format', ''),
+                'betaPipeline': metadata.get('beta_pipeline', ''),
                 'githubUrl': metadata.get('github_url', ''),
                 'publicationUrl': metadata.get('publication_url', ''),
                 'lastModified': obj['LastModified'].isoformat(),
-                'size': obj['Size']
+                'size': humanize.naturalsize(obj['Size'], binary=True)
             }
             
             files_data.append(file_data)
@@ -182,11 +175,11 @@ def upload_to_s3():
         # Get metadata from form
         metadata = {
             'dataset_name': request.form.get('datasetName', ''),
-            'subject_name': request.form.get('subjectName', ''),
-            'pipeline': request.form.get('pipeline', ''),
+            'subjectID': request.form.get('subjectName', ''),
+            'preprocessing_pipeline': request.form.get('preprocessingPipeline', ''),
             'owner_name': request.form.get('ownerName', ''),
             'owner_email': request.form.get('ownerEmail', ''),
-            'trial_format': request.form.get('trialFormat', ''),
+            'beta_pipeline': request.form.get('betaPipeline', ''),
             'github_url': request.form.get('githubUrl', ''),
             'publication_url': request.form.get('publicationUrl', '')
         }

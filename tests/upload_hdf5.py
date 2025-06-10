@@ -30,8 +30,8 @@ def extract_hdf5_metadata(file_path):
     try:
         with h5py.File(file_path, 'r') as f:
             # Try to get metadata from file attributes
-            for key in ['dataset_name', 'sub-ID', 'pipeline', 'owner_name', 
-                       'owner_email', 'trial_format', 'github_url', 'publication_url']:
+            for key in ['dataset_name', 'subjectID', 'preprocessing_pipeline', 'owner_name', 
+                       'owner_email', 'beta_pipeline', 'github_url', 'publication_url']:
                 if key in f.attrs:
                     metadata[key] = f.attrs[key].decode('utf-8') if isinstance(f.attrs[key], bytes) else str(f.attrs[key])
                 else:
@@ -41,11 +41,11 @@ def extract_hdf5_metadata(file_path):
         # Return empty metadata if file can't be read
         metadata = {
             'dataset_name': '',
-            'subject_name': '',
-            'pipeline': '',
+            'subjectID': '',
+            'preprocessing_pipeline': '',
             'owner_name': '',
             'owner_email': '',
-            'trial_format': '',
+            'beta_pipeline': '',
             'github_url': '',
             'publication_url': ''
         }

@@ -1,50 +1,3 @@
-// Mock data - replace with actual S3 API calls
-const mockData = [
-    {
-        fileId: "dataset1_subject1_pipeline1.hdf5",
-        datasetName: "Neural Activity Dataset",
-        subjectName: "Subject_001",
-        pipeline: "preprocessing_v1",
-        ownerName: "Dr. Smith",
-        ownerEmail: "smith@university.edu",
-        trialFormat: "continuous",
-        githubUrl: "https://github.com/lab/neural-analysis",
-        publicationUrl: "https://doi.org/10.1000/example1"
-    },
-    {
-        fileId: "dataset1_subject2_pipeline1.hdf5",
-        datasetName: "Neural Activity Dataset",
-        subjectName: "Subject_002",
-        pipeline: "preprocessing_v1",
-        ownerName: "Dr. Smith",
-        ownerEmail: "smith@university.edu",
-        trialFormat: "continuous",
-        githubUrl: "https://github.com/lab/neural-analysis",
-        publicationUrl: "https://doi.org/10.1000/example1"
-    },
-    {
-        fileId: "dataset1_subject1_pipeline2.hdf5",
-        datasetName: "Neural Activity Dataset",
-        subjectName: "Subject_001",
-        pipeline: "preprocessing_v2",
-        ownerName: "Dr. Smith",
-        ownerEmail: "smith@university.edu",
-        trialFormat: "continuous",
-        githubUrl: "https://github.com/lab/neural-analysis",
-        publicationUrl: "https://doi.org/10.1000/example1"
-    },
-    {
-        fileId: "dataset2_subject1_pipeline1.hdf5",
-        datasetName: "Behavioral Dataset",
-        subjectName: "Subject_A",
-        pipeline: "analysis_standard",
-        ownerName: "Dr. Johnson",
-        ownerEmail: "johnson@institute.org",
-        trialFormat: "discrete",
-        githubUrl: "https://github.com/lab/behavior-analysis",
-        publicationUrl: "https://doi.org/10.1000/example2"
-    }
-];
 
 let selectedFiles = new Set();
 let allData = [];
@@ -86,29 +39,20 @@ async function loadData() {
     }
 }
 
-/*
-// In a real implementation, this would fetch from S3
-function loadData() {
-    allData = mockData;
-    displayData(allData);
-    updateStats();
-}
-    */
-
 function groupData(data) {
     const groups = new Map();
     
     data.forEach(item => {
-        const groupKey = `${item.datasetName}|${item.pipeline}|${item.trialFormat}|${item.publicationUrl}|${item.githubUrl}`;
+        const groupKey = `${item.datasetName}|${item.preprocessingPipeline}|${item.betaPipeline}|${item.publicationUrl}|${item.githubUrl}`;
         
         if (!groups.has(groupKey)) {
             groups.set(groupKey, {
                 metadata: {
                     datasetName: item.datasetName,
-                    pipeline: item.pipeline,
+                    preprocessingPipeline: item.preprocessingPipeline,
                     ownerName: item.ownerName,
                     ownerEmail: item.ownerEmail,
-                    trialFormat: item.trialFormat,
+                    betaPipeline: item.betaPipeline,
                     githubUrl: item.githubUrl,
                     publicationUrl: item.publicationUrl
                 },
@@ -143,23 +87,23 @@ function createGroupElement(group) {
             <div class="group-title">${group.metadata.datasetName}</div>
             <div class="group-metadata">
                 <div class="metadata-item">
-                    <span class="metadata-label">Pipeline</span>
-                    <span class="metadata-value">${group.metadata.pipeline}</span>
+                    <span class="metadata-label">Preprocessing Pipeline</span>
+                    <span class="metadata-value">${group.metadata.preprocessingPipeline}</span>
+                </div>
+                <div class="metadata-item">
+                    <span class="metadata-label">Beta Pipeline</span>
+                    <span class="metadata-value">${group.metadata.betaPipeline}</span>
                 </div>
                 <div class="metadata-item">
                     <span class="metadata-label">Owner</span>
                     <span class="metadata-value">${group.metadata.ownerName} (${group.metadata.ownerEmail})</span>
                 </div>
                 <div class="metadata-item">
-                    <span class="metadata-label">Trial Format</span>
-                    <span class="metadata-value">${group.metadata.trialFormat}</span>
-                </div>
-                <div class="metadata-item">
-                    <span class="metadata-label">GitHub</span>
+                    <span class="metadata-label">GitHub URL</span>
                     <span class="metadata-value"><a href="${group.metadata.githubUrl}" target="_blank">${group.metadata.githubUrl}</a></span>
                 </div>
                 <div class="metadata-item">
-                    <span class="metadata-label">Publication</span>
+                    <span class="metadata-label">Publication URL</span>
                     <span class="metadata-value"><a href="${group.metadata.publicationUrl}" target="_blank">${group.metadata.publicationUrl}</a></span>
                 </div>
             </div>
@@ -179,9 +123,7 @@ function createFileElement(file) {
                    onchange="toggleFileSelection('${file.fileId}')">
             <div class="object-info">
                 <span class="object-id">${file.fileId}</span>
-                <span>${file.subjectName}</span>
-                <span>${file.ownerName}</span>
-                <span>${file.trialFormat}</span>
+                <span>${file.size}</span>
             </div>
         </div>
     `;
