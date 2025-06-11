@@ -90,7 +90,7 @@ In the file, put:
 ```
 server {
     listen 80;
-    server_name mosaic.csail.mit.edu;
+    server_name mosaic.csail.mit.edu www.mosaic.csail.mit.edu;
     
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -134,7 +134,7 @@ sudo systemctl status nginx
 ```
 sudo yum install python3-pip -y
 sudo pip3 install certbot certbot-nginx
-sudo certbot --nginx -d mosaic.csail.mit.edu
+sudo certbot --nginx -d mosaic.csail.mit.edu -d www.mosaic.csail.mit.edu
 ```
 
 Test and check services
