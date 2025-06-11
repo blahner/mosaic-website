@@ -1,6 +1,7 @@
 python-dotenv
 Flask==2.3.3
 Flask-CORS==4.0.0
+gunicorn
 boto3==1.28.85
 h5py==3.9.0
 humanize
