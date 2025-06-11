@@ -1,5 +1,5 @@
 # mosaic-website
-This repository contains the frontend and backend code for MOSAIC data downloads and uploads to an Amazon S3 bucket.
+This repository contains the frontend and backend code for MOSAIC data downloads and uploads to an Amazon S3 bucket. 
 
 ### Envirnment setup
 ```
