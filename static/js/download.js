@@ -100,11 +100,11 @@ function createGroupElement(group) {
                 </div>
                 <div class="metadata-item">
                     <span class="metadata-label">GitHub URL</span>
-                    <span class="metadata-value"><a href="${group.metadata.githubUrl}" target="_blank">${group.metadata.githubUrl}</a></span>
+                    <span class="metadata-value" style="word-break: break-all;"><a href="${group.metadata.githubUrl}" target="_blank">${group.metadata.githubUrl}</a></span>
                 </div>
                 <div class="metadata-item">
                     <span class="metadata-label">Publication URL</span>
-                    <span class="metadata-value"><a href="${group.metadata.publicationUrl}" target="_blank">${group.metadata.publicationUrl}</a></span>
+                    <span class="metadata-value" style="word-break: break-all;"><a href="${group.metadata.publicationUrl}" target="_blank">${group.metadata.publicationUrl}</a></span>
                 </div>
             </div>
         </div>
@@ -123,7 +123,7 @@ function createFileElement(file) {
                    onchange="toggleFileSelection('${file.fileId}')">
             <div class="object-info">
                 <span class="object-id">${file.fileId}</span>
-                <span>${file.size}</span>
+                <span>File size: ${file.size}</span>
             </div>
         </div>
     `;
@@ -187,8 +187,9 @@ function filterData() {
     
     const filteredData = allData.filter(item => 
         item.datasetName.toLowerCase().includes(searchTerm) ||
-        item.subjectName.toLowerCase().includes(searchTerm) ||
-        item.pipeline.toLowerCase().includes(searchTerm) ||
+        item.preprocessingPipeline.toLowerCase().includes(searchTerm) ||
+        item.betaPipeline.toLowerCase().includes(searchTerm) ||
+        item.githubUrl.toLowerCase().includes(searchTerm) ||
         item.ownerName.toLowerCase().includes(searchTerm) ||
         item.fileId.toLowerCase().includes(searchTerm)
     );

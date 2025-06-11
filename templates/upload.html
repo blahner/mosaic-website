@@ -25,59 +25,6 @@
                            style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
                 </div>
 
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="datasetName" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Dataset Name:</label>
-                    <input type="text" id="datasetName" required 
-                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="subjectName" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Subject Name:</label>
-                    <input type="text" id="subjectName" required 
-                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="pipeline" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Preprocessing Pipeline:</label>
-                    <input type="text" id="pipeline" required 
-                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="ownerName" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Owner Name:</label>
-                    <input type="text" id="ownerName" required 
-                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="ownerEmail" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Owner Email:</label>
-                    <input type="email" id="ownerEmail" required 
-                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="trialFormat" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Beta Pipeline</label>
-                    <select id="trialFormat" required 
-                            style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                        <option value="">Select format...</option>
-                        <option value="continuous">Continuous</option>
-                        <option value="discrete">Discrete</option>
-                        <option value="mixed">Mixed</option>
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="githubUrl" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">GitHub Repository URL:</label>
-                    <input type="url" id="githubUrl" 
-                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                </div>
-
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="publicationUrl" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Publication URL:</label>
-                    <input type="url" id="publicationUrl" 
-                           style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
-                </div>
-
                 <button type="submit" disabled
                         style="padding: 0.75rem 2rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">
                     Upload to S3 (temporarily disabled)
@@ -85,6 +32,13 @@
             </form>
 
             <div id="uploadStatus" style="margin-top: 2rem; padding: 1rem; border-radius: 4px; display: none;"></div>
+            <div id="progressContainer" style="margin-top: 1rem; display: none;">
+                <div style="margin-bottom: 0.5rem; font-weight: bold;">Upload Progress:</div>
+                <div style="width: 100%; background-color: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                    <div id="progressBar" style="width: 0%; height: 20px; background-color: #007bff; transition: width 0.3s ease;"></div>
+                </div>
+                <div id="progressText" style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;"></div>
+            </div>
         </main>
     </div>
 
@@ -105,41 +59,53 @@
             submitButton.disabled = true;
             submitButton.textContent = 'Uploading...';
             
+            // upload progress bar
             try {
-                // Create FormData from form
                 const formData = new FormData();
                 formData.append('file', document.getElementById('file').files[0]);
-                formData.append('datasetName', document.getElementById('datasetName').value);
-                formData.append('subjectName', document.getElementById('subjectName').value);
-                formData.append('pipeline', document.getElementById('pipeline').value);
-                formData.append('ownerName', document.getElementById('ownerName').value);
-                formData.append('ownerEmail', document.getElementById('ownerEmail').value);
-                formData.append('trialFormat', document.getElementById('trialFormat').value);
-                formData.append('githubUrl', document.getElementById('githubUrl').value);
-                formData.append('publicationUrl', document.getElementById('publicationUrl').value);
                 
-                // Upload to Flask API
-                const response = await fetch(`${API_BASE_URL}/s3/upload`, {
-                    method: 'POST',
-                    body: formData
+                // Upload to Flask API with progress tracking
+                const xhr = new XMLHttpRequest();
+
+                // Track upload progress
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        document.getElementById('progressContainer').style.display = 'block';
+                        document.getElementById('progressBar').style.width = percentComplete + '%';
+                        document.getElementById('progressText').textContent = 
+                            `${Math.round(percentComplete)}% (${(e.loaded / 1024 / 1024).toFixed(1)} MB / ${(e.total / 1024 / 1024).toFixed(1)} MB)`;
+                    }
                 });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    statusDiv.style.background = '#d4edda';
-                    statusDiv.style.color = '#155724';
-                    statusDiv.textContent = `File uploaded successfully! Filename: ${result.filename}`;
-                    document.getElementById('uploadForm').reset();
-                } else {
-                    throw new Error(result.error || 'Upload failed');
-                }
+
+                // Handle response
+                xhr.onload = function() {
+                    const result = JSON.parse(xhr.responseText);
+                    
+                    if (xhr.status === 200) {
+                        statusDiv.style.background = '#d4edda';
+                        statusDiv.style.color = '#155724';
+                        statusDiv.textContent = `File uploaded successfully! Filename: ${result.filename}`;
+                        document.getElementById('uploadForm').reset();
+                    } else {
+                        throw new Error(result.error || 'Upload failed');
+                    }
+                };
+
+                xhr.onerror = function() {
+                    throw new Error('Network error occurred');
+                };
+
+                // Start upload
+                xhr.open('POST', `${API_BASE_URL}/s3/upload`);
+                xhr.send(formData);
                 
             } catch (error) {
                 statusDiv.style.background = '#f8d7da';
                 statusDiv.style.color = '#721c24';
                 statusDiv.textContent = `Upload failed: ${error.message}`;
             } finally {
+                document.getElementById('progressContainer').style.display = 'none';
                 submitButton.disabled = false;
                 submitButton.textContent = 'Upload to S3';
             }

@@ -23,32 +23,43 @@
                     <h2 style="margin-bottom: 1rem;">What is MOSAIC?</h2>
                     <p>MOSAIC (Meta-Organized Stimuli And Imaging data for Computational modeling) is a fMRI dataset aggregation framework. By 
                         aggregating datasets, the computational neuroscience field can achieve greater scale and diversity of data that is otherwise not possible with a single dataset.
-                        MOSAIC is community-driven, meaning anyone can upload their MOSAIC-compatible fMRI datasets for the community to use.
+                        MOSAIC is community-driven, meaning anyone can upload their MOSAIC-compliant fMRI datasets for the community to use.
                     </p>
                 </div>
 
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">What does it mean to be MOSAIC-compatible?</h2>
+                    <h2 style="margin-bottom: 1rem;">What is the difference between MOSAIC-compatible and MOSAIC-compliant?</h2>
                     <p>
-                        A group of datasets are MOSAIC-compatible if they are preprocessed with the same preprocessing pipeline (e.g., same version of fMRIPrep) and trial estimation procedure (e.g., single trial beta estimates).
-                        MOSAIC does not introduce a novel preprocessing pipeline or recommend any one in particular - the purpose is to simply preprocess all fMRI data into a common format (e.g., beta - stimulus pairs)
-                        while, to the best of our ability, controlling for scanner- dataset- and software-specific variability. In this way, MOSAIC can evolve with advancements in preprocessing techniques.
-                        In the download page of this portal, you will see datasets preprocessed with some combination of preprocessing pipeline and trial estimation procedure. All datasets that use the same preprocessing 
-                        pipeline and trial estimation procedure are MOSAIC-compatible with each other. But feel free to upload versions that use a different preprocessing pipeline if you think its better in some way - that version won't be MOSAIC-compatible with the previous dataset versions, but it will be MOSAIC-compatible
-                        with other datasets that follow your different preprocessing pipeline.
+                        A group of dataset files are MOSAIC-compatible if they are preprocessed with the same preprocessing pipeline (e.g., same version of fMRIPrep and GLMsingle).
+                        A dataset file is MOSAIC-compliant if it meets certain formatting requirements. All files that are MOSAIC-compatable with each other are also, by definiition, MOSAIC-compliant.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">How do I tell which dataset files are MOSAIC-compatible with each other?</h2>
+                    <p>
+                        Files that share the same preprocessing pipeline and beta pipeline are MOSAIC-compatible. The download page of this portal allows you to filter by metadata (dataset name, subject ID, 
+                        GitHub URL, preprocessing pipeline, and beta pipeline) so you can quickly find compatible files.
                     </p>
                     <p>
-                        This portal will notify you if your collection of datasets are obviously not MOSAIC-compatible (i.e., a mismatch between preprocessing pipelines), but researchers 
-                        should also use their discretion as compatibility is not always clear cut. For example, GLMs to estimate beta values sometimes depend on a few dataset-specific parameters. The MOSAIC's original set of 8 datasets uses GLMsingle which itself has three levels of processing (type A, type B, type C estimates).
-                        While type C gives the best results, some datasets are simply not compatible with type C due to a lack of stimulus repeats, so type B was used (plus other dataset-specific choices, like regressing out button presses). We still say the set of 8 datasets are MOSAIC-compatible because they
-                        share the same preprocessing pipeline (fMRIPrep version 23.2.0) and used the same software version of GLMsingle to then estimate the highest quality of beta estimates possible for the given dataset, even though the specific 'type' of GLMsingle estimate was not always the same.
+                        One may upload different preprocessed versions of a dataset that use the same preprocessing and beta pipelines (e.g., but use different parameters, fix a bug etc.). In this case, that new
+                        version and old version would both still be MOSAIC-compatible with the other datasets sharing the same preprocessing and beta pipelines. Use your discretion on which version you would like
+                        to use and be clear in your manuscript with exact files you use by noting their crc32 hashes.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
+                    <h2 style="margin-bottom: 1rem;">Does MOSAIC introduce its own novel preprocessing pipeline?</h2>
+                    <p>
+                        No. MOSAIC does not introduce a novel preprocessing pipeline or recommend any one in particular - the purpose is to simply preprocess all fMRI data into a common format (e.g., beta - stimulus pairs)
+                        while, to the best of our ability, controlling for scanner- dataset- and software-specific variability. In this way, MOSAIC can evolve with advancements in preprocessing techniques.
                     </p>
                 </div>
 
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
                     <h2 style="margin-bottom: 1rem;">Can any fMRI dataset be uploaded?</h2>
                     <p>
-                        Yes. The original MOSAIC paper (TODO link) scoped the initial 8 datasets to be passive vision event-related designs. This choice was made to obtain high quality
+                        Yes. The original <a href="TODOlink">MOSAIC paper</a> scoped the initial 8 datasets to be passive vision event-related designs. This choice was made to obtain high quality
                         beta - stimulus pairs. For example, longform movie datasets are not well-suited for GLMs to obtain well-defined beta - stimulus pairs. That being said, we hope MOSAIC
                         can grow beyond the original scope. Feel free to preprocess, document, and upload any fMRI dataset.
                     </p>
@@ -63,8 +74,8 @@
                             <li>Owner name: Name of the person (you) who preprocessed the dataset. Must be one individual taking responsibility.</li>
                             <li>Owner email: Email of the "owner" to contact in case of questions.</li>
                             <li>GitHub URL: URL to a public GitHub repository that contains code (and ideally quality checks) used to preprocess the uploaded data.</li>
-                            <li>Pipeline: Which preprocessing pipeline was used to preprocess the data (e.g., fMRIPrepv23.2.0).</li>
-                            <li>Trial format: The format of the trials (e.g., beta estimates, time series).</li>
+                            <li>Preprocessing pipeline: Which preprocessing pipeline was used to preprocess the data (e.g., fMRIPrepv23.2.0).</li>
+                            <li>Beta pipeline: Which beta estimation pipeline was used (e.g., GLMsinglev1.2) ?</li>
                             <li>Publication URL: URL to the original publication of the dataset for citation purposes.</li>
                         </ul>
 
@@ -108,13 +119,8 @@
                 </div>
 
                 <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
-                    <h2 style="margin-bottom: 1rem;">What do I need to run the download script?</h2>
-                    <p>You need to have the AWS CLI installed and configured with appropriate credentials to access the S3 bucket. The script uses standard AWS CLI commands to download files.</p>
-                </div>
-
-                <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 4px;">
                     <h2 style="margin-bottom: 1rem;">Is there a file size limit?</h2>
-                    <p>Yes, the single file size limit is 20gb. This limit mainly exists to prevent unintended large uploads. If you are trying to upload a dataset that exceeds this limit, contact us and we can raise the limit. </p>
+                    <p>Yes, the single file size limit is 30gb. This limit mainly exists to prevent unintended large uploads. If you are trying to upload a dataset that exceeds this limit, contact us and we can raise the limit. </p>
                 </div>
             </div>
         </main>

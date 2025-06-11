@@ -10,6 +10,10 @@ import humanize
 from datetime import datetime
 import tempfile
 from werkzeug.utils import secure_filename
+from pathlib import Path
+
+#local
+from utils.helpers import upload_with_progress, generate_content_hash
 
 app = Flask(__name__,
             template_folder='templates',
@@ -21,6 +25,7 @@ S3_BUCKET = os.environ.get('S3_BUCKET', 'your-s3-bucket-name')
 AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'hdf5', 'h5'}
+UPLOAD_SIZE_LIMIT=30 #GB
 
 # Ensure upload folder exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -83,6 +88,45 @@ def get_s3_object_metadata(key):
     except Exception as e:
         print(f"Error getting metadata for {key}: {e}")
         return {}
+
+def list_s3_crc32():
+    """
+    Get the crc32 hashes for each object in the s3 bucket and return as dict,
+    not jsonify for flask app. Otherwise similar to function 'list_s3_files()'.
+    """
+    """List all HDF5 files in S3 bucket with metadata"""
+    if not s3_client:
+        return {'error': 'S3 client not configured'}
+    
+    try:
+        # List objects in bucket
+        response = s3_client.list_objects_v2(Bucket=S3_BUCKET)
+        
+        if 'Contents' not in response:
+            return {}
+        
+        files_data = {}
+        for obj in response['Contents']:
+            key = obj['Key']
+            
+            # Only process HDF5 files
+            if not (key.endswith('.hdf5') or key.endswith('.h5')):
+                continue
+            
+            # Get metadata for this file
+            metadata = get_s3_object_metadata(key)
+            files_data.update({key: metadata.get("crc32_hash", "")})
+        
+        return files_data
+    
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'NoSuchBucket':
+            return {'error': 'S3 bucket not found'}
+        else:
+            return {'error': f'S3 error: {error_code}'}
+    except Exception as e:
+        return {'error': str(e)}
 
 @app.route('/')
 def index():
@@ -172,46 +216,38 @@ def upload_to_s3():
         return jsonify({'error': 'Only HDF5 files (.hdf5, .h5) are allowed'}), 400
     
     try:
-        # Get metadata from form
-        metadata = {
-            'dataset_name': request.form.get('datasetName', ''),
-            'subjectID': request.form.get('subjectName', ''),
-            'preprocessing_pipeline': request.form.get('preprocessingPipeline', ''),
-            'owner_name': request.form.get('ownerName', ''),
-            'owner_email': request.form.get('ownerEmail', ''),
-            'beta_pipeline': request.form.get('betaPipeline', ''),
-            'github_url': request.form.get('githubUrl', ''),
-            'publication_url': request.form.get('publicationUrl', '')
-        }
+        size_human_readable = humanize.naturalsize(os.path.getsize(file))
+        if size_human_readable > UPLOAD_SIZE_LIMIT:
+            return jsonify({'error': f"Desired file upload size was {size_human_readable} and the max is {UPLOAD_SIZE_LIMIT}. Contact us if you truly have a file this large to upload."})
+        metadata = extract_hdf5_metadata(file)
         
         # Secure filename
         filename = secure_filename(file.filename)
+        metadata.update({"file_size": size_human_readable})
         
-        # Create unique filename if needed
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        #use crc32 to hash hdf5 file. any change in file creates new hash
+        #hash just intended to ensure files are same or different
+        crc32_hash = generate_content_hash(file)
+
+        #get other s3 object crc32 hash
+        existing_objects = list_s3_crc32()
+        existing_hashes = set(existing_objects.values())
+        if crc32_hash in existing_hashes:
+            return jsonify({'error': 'This file has already been uploaded.'})
+
+        filename = Path(file).name
         name, ext = os.path.splitext(filename)
-        unique_filename = f"{name}_{timestamp}{ext}"
-        
-        # Save file temporarily
-        temp_path = os.path.join(UPLOAD_FOLDER, unique_filename)
-        file.save(temp_path)
-        
-        # Upload to S3 with metadata
-        s3_metadata = {k.replace('_', '-'): v for k, v in metadata.items() if v}
-        
-        with open(temp_path, 'rb') as f:
-            s3_client.upload_fileobj(
-                f, 
-                S3_BUCKET, 
-                unique_filename,
-                ExtraArgs={
-                    'Metadata': s3_metadata,
-                    'ContentType': 'application/x-hdf'
-                }
-            )
-        
-        # Clean up temporary file
-        os.remove(temp_path)
+        unique_filename = f"{name}_crc32-{crc32_hash}{ext}"
+
+        metadata.update({"crc32_hash": crc32_hash})
+
+        upload_with_progress(
+            file_path=file,
+            s3_client=s3_client,
+            bucket=S3_BUCKET,
+            key=unique_filename,
+            metadata=metadata
+        )
         
         return jsonify({
             'message': 'File uploaded successfully',
@@ -222,9 +258,6 @@ def upload_to_s3():
     except ClientError as e:
         return jsonify({'error': f'S3 upload error: {e.response["Error"]["Code"]}'}), 500
     except Exception as e:
-        # Clean up temporary file if it exists
-        if 'temp_path' in locals() and os.path.exists(temp_path):
-            os.remove(temp_path)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/s3/download/<path:filename>', methods=['GET'])
