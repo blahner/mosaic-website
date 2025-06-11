@@ -320,4 +320,4 @@ if __name__ == '__main__':
     print(f"S3 Bucket: {S3_BUCKET}")
     print(f"AWS Region: {AWS_REGION}")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True)
