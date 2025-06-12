@@ -43,7 +43,7 @@ function groupData(data) {
     const groups = new Map();
     
     data.forEach(item => {
-        const groupKey = `${item.datasetName}|${item.preprocessingPipeline}|${item.betaPipeline}|${item.publicationUrl}|${item.githubUrl}`;
+        const groupKey = `${item.datasetName}|${item.preprocessingPipeline}|${item.betaPipeline}|${item.publicationUrl}`;
         
         if (!groups.has(groupKey)) {
             groups.set(groupKey, {
@@ -95,20 +95,19 @@ function createGroupElement(group) {
                     <span class="metadata-value">${group.metadata.betaPipeline}</span>
                 </div>
                 <div class="metadata-item">
-                    <span class="metadata-label">Owner</span>
-                    <span class="metadata-value">${group.metadata.ownerName} (${group.metadata.ownerEmail})</span>
-                </div>
-                <div class="metadata-item">
-                    <span class="metadata-label">GitHub URL</span>
-                    <span class="metadata-value" style="word-break: break-all;"><a href="${group.metadata.githubUrl}" target="_blank">${group.metadata.githubUrl}</a></span>
-                </div>
-                <div class="metadata-item">
                     <span class="metadata-label">Publication URL</span>
                     <span class="metadata-value" style="word-break: break-all;"><a href="${group.metadata.publicationUrl}" target="_blank">${group.metadata.publicationUrl}</a></span>
                 </div>
             </div>
         </div>
         <div class="objects-list">
+            <div class="file-headers" style="display: grid; grid-template-columns: 40px 2fr 100px 200px 1fr; gap: 1rem; padding: 0.5rem; font-weight: bold; border-bottom: 1px solid #ddd; margin-bottom: 0.5rem;">
+                <span></span>
+                <span>File ID</span>
+                <span>Size</span>
+                <span>Owner</span>
+                <span>GitHub</span>
+            </div>
             ${group.files.map(file => createFileElement(file)).join('')}
         </div>
     `;
@@ -118,13 +117,13 @@ function createGroupElement(group) {
 
 function createFileElement(file) {
     return `
-        <div class="object-item">
+        <div class="object-item" style="display: grid; grid-template-columns: 40px 2fr 100px 200px 1fr; gap: 1rem; align-items: center; padding: 0.5rem;">
             <input type="checkbox" class="object-checkbox" data-file-id="${file.fileId}" 
                    onchange="toggleFileSelection('${file.fileId}')">
-            <div class="object-info">
-                <span class="object-id">${file.fileId}</span>
-                <span>File size: ${file.size}</span>
-            </div>
+            <span style="word-break: break-all;">${file.fileId}</span>
+            <span>${file.size}</span>
+            <span>${file.ownerName} (${file.ownerEmail})</span>
+            <span style="word-break: break-all;">${file.githubUrl}</span>
         </div>
     `;
 }
