@@ -123,7 +123,7 @@ function createFileElement(file) {
             <span style="word-break: break-all;">${file.fileId}</span>
             <span>${file.size}</span>
             <span>${file.ownerName} (${file.ownerEmail})</span>
-            <span style="word-break: break-all;">${file.githubUrl}</span>
+            <span style="word-break: break-all;"><a href="${file.githubUrl}" target="_blank">${file.githubUrl}</a></span>
         </div>
     `;
 }
